@@ -98,6 +98,7 @@
 0:0	reg_FIFO_CONTROL
 0:0	reg_POWER_CONTROL
 0:0	reg_INTERRUPTS_MAP
+0:0	c_datalen
 0:0	c_handle_for_incoming_data_event
 0:4	handle_for_incoming_data_event
 4:4	incomingdata

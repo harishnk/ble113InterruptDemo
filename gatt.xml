@@ -57,25 +57,25 @@
         <characteristic uuid="f90ea017-f673-45b8-b00b-16a088a2ed61" id="accel_x">
             <description>Accel X</description>
             <properties read="true" indicate="true" />
-            <value length="2" />
+            <value length="3" />
         </characteristic>
 
         <characteristic uuid="ebdf04a6-890a-4686-b9a8-a936148970a4" id="accel_y">
             <description>Accel Y</description>
             <properties read="true" indicate="true" />
-            <value length="2" />
+            <value length="3" />
         </characteristic>
 
         <characteristic uuid="ebdf04a6-890a-4686-b9a8-a936148970a6" id="accel_z">
             <description>Accel Z</description>
             <properties read="true" indicate="true" />
-            <value length="2" />
+            <value length="3" />
         </characteristic>
 
         <characteristic uuid="ebdf04a6-890a-4686-b9a8-a936148970a7" id="color">
             <description>Band color</description>
             <properties write="true" indicate="true" />
-            <value length="2" />
+            <value length="3" />
         </characteristic>
 
     </service>

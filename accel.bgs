@@ -12,6 +12,8 @@ const reg_FIFO_CONTROL = $38
 const reg_POWER_CONTROL = $2d
 const reg_INTERRUPTS_MAP = $2f
 
+const c_datalen = 3
+
 const c_handle_for_incoming_data_event = $1
 
 dim handle_for_incoming_data_event
@@ -19,7 +21,7 @@ dim handle_for_incoming_data_event
 dim incomingdata
 
 event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw )
-	incomingdata = 0
+	incomingdata = $000000
 	#set to advertising mode
 	call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
 	#Deselect Accel	
@@ -79,10 +81,10 @@ event attributes_value(connection, reason, handle, offset, value_len, value_data
 	if handle = color	
 		call attributes_read(handle, 0)  #(handle, offset) (handle, offset, result, value_len, value_data)
         #value_data is a buffer; cannot do a direct read. We are interested in 2 bytes after the offset (which is 0 here)
-		if value_data(offset:2)>$0
+		if value_data(offset:c_datalen)>$0
 			#Write logic gatt characteristic to the P0_1 port
-			incomingdata = value_data(offset:2)
-			call attributes_write(accel_x, 0, 2, incomingdata)        #writes to accel_x GATT
+			incomingdata = value_data(offset:c_datalen)
+			call attributes_write(accel_x, 0, c_datalen, incomingdata)        #writes to accel_x GATT
 			call hardware_io_port_write(0, port0_pin1, incomingdata)  #writing to this pin triggers interrupt which writes to accel_y GATT
 		end if
 		#Respond to attribute_changed event since reason is user-attribute write (send the response back to the caller)
@@ -92,9 +94,10 @@ end
 
 # catch INT1 interrupt raised on SINGLE_TAP on port P0_1 (active HIGH configuration, hardware.xml pulls it low)
 event hardware_io_port_status(delta_timestamp, port, irq, state)
-	# if port = 0 && (irq & 2) = 2 then
+	if port = 0 && (irq & 2) = 2 then
+		####initiate SPI data receive from ADLX345
 		# if incomingdata = $FF
-			call attributes_write(accel_y, 0, 2, incomingdata)
+			call attributes_write(accel_y, 0, c_datalen, incomingdata)
 		# end if
-	# end if
+	end if
 end
