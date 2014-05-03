@@ -1,0 +1,100 @@
+const portmask_writeconfig = $02
+const port0_pin1 = $02
+const reg_INTERRUPTS_ENABLE = $2e
+const reg_DATA_FORMAT = $31
+const reg_BW_RATE = $2c
+const reg_TAP_AXES = $2a
+const reg_TAP_THRESHOLD = $1d
+const reg_TAP_DURATION = $21
+const reg_TAP_LATENCY = $22
+const reg_TAP_WINDOW = $23
+const reg_FIFO_CONTROL = $38
+const reg_POWER_CONTROL = $2d
+const reg_INTERRUPTS_MAP = $2f
+
+const c_handle_for_incoming_data_event = $1
+
+dim handle_for_incoming_data_event
+
+dim incomingdata
+
+event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw )
+	incomingdata = 0
+	#set to advertising mode
+	call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+	#Deselect Accel	
+	# call hardware_io_port_config_direction(0, $02) ###enable port 0.1 and 0.2 = 6
+	# call hardware_io_port_write(0, portmask_writeconfig, 1) ###enable port 0.1 and 0.2 = 6
+    
+	# call hardware_io_port_write(0, $02, $0)
+    call hardware_io_port_config_direction(0, portmask_writeconfig)
+	# call hardware_io_port_write(0, portmask_writeconfig, $1)
+	
+	# call hardware_io_port_config_pull(0, $02, $1) #pull down
+
+	call hardware_io_port_write(0, $02, 0) #interrupt default low
+
+	
+	#set bondable mode
+	call sm_set_bondable_mode(1)
+	#configure the P0_0 as output
+	#call hardware_io_port_config_direction(0, 1)
+	#configure spi
+	
+    # enable interrupt on P0_1 rising edge (interrupt is enabled with logic high (DATA_FORMAT_REGISTER))
+    # (parameters are port=0, bitmask=0b00000010, edge=rising)
+    call hardware_io_port_config_irq(0, port0_pin1, 0)
+
+    # handle_for_incoming_data_event = 1
+	# call hardware_set_soft_timer(8192, handle_for_incoming_data_event, 0)
+
+end
+
+# event hardware_soft_timer(handle)
+
+  # # if handle = c_handle_for_incoming_data_event
+  # # end if
+
+# end
+
+# Connection event listener
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+	#Device is connected
+
+	#enable status LED
+	#call hardware_io_port_write(0, 1, 1)	
+end
+
+event connection_disconnected(handle,result_conn)
+	#No devices connected
+
+	#connection disconnected, continue advertising
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+	#disable status LED
+	#call hardware_io_port_write(0, 1, 0)
+end
+
+event attributes_value(connection, reason, handle, offset, value_len, value_data)
+    #Listen for GATT attribute write events. GATT characteristic is inbound_data
+	if handle = color	
+		call attributes_read(handle, 0)  #(handle, offset) (handle, offset, result, value_len, value_data)
+        #value_data is a buffer; cannot do a direct read. We are interested in 2 bytes after the offset (which is 0 here)
+		if value_data(offset:2)>$0
+			#Write logic gatt characteristic to the P0_1 port
+			incomingdata = value_data(offset:2)
+			call attributes_write(accel_x, 0, 2, incomingdata)        #writes to accel_x GATT
+			call hardware_io_port_write(0, port0_pin1, incomingdata)  #writing to this pin triggers interrupt which writes to accel_y GATT
+		end if
+		#Respond to attribute_changed event since reason is user-attribute write (send the response back to the caller)
+		call attributes_user_write_response(connection, $0)
+	end if
+end
+
+# catch INT1 interrupt raised on SINGLE_TAP on port P0_1 (active HIGH configuration, hardware.xml pulls it low)
+event hardware_io_port_status(delta_timestamp, port, irq, state)
+	# if port = 0 && (irq & 2) = 2 then
+		# if incomingdata = $FF
+			call attributes_write(accel_y, 0, 2, incomingdata)
+		# end if
+	# end if
+end

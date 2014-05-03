@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <!-- 1800: org.bluetooth.service.generic_access -->
+    <service uuid="1800" id="generic_access">
+        <description>Generic Access</description>
+
+        <!-- 2A00: org.bluetooth.characteristic.gap.device_name -->
+        <characteristic uuid="2A00" id="c_device_name">
+            <description>Device Name</description>
+            <properties read="true" const="true" />
+            <value>Headtalk device</value>
+        </characteristic>
+
+        <!-- 2A01: org.bluetooth.characteristic.gap.appearance -->
+        <characteristic uuid="2A01" id="c_appearance">
+            <description>Appearance</description>
+            <properties read="true" const="true" />
+            <value type="hex">0100</value>
+        </characteristic>
+        
+    </service>
+
+    <!-- 180A: org.bluetooth.service.device_information -->
+    <service uuid="180A" id="device_information">
+        <description>Device Information</description>
+    
+        <!-- 2A29: org.bluetooth.characteristic.manufacturer_name_string -->
+        <characteristic uuid="2A29" id="c_manufacturer_name">
+            <description>Manufacturer Name</description>
+            <properties read="true" const="true" />
+            <value>Headtalk.io</value>
+        </characteristic>
+
+        <!-- 2A24: org.bluetooth.characteristic.model_number_string -->
+        <characteristic uuid="2A24" id="c_model_number">
+            <description>Model Number</description>
+            <properties read="true" const="true" />
+            <value>ALPHA DEVICE</value>
+        </characteristic>
+
+	<!-- 2A23: org.bluetooth.characteristic.gap.system_id -->
+        <characteristic uuid="2A23" id="c_system_id">
+            
+	    <description>System ID</description>
+            
+            <properties read="true" const="true" />
+            
+            <value type="hex">FEEDDEAFDEAFFEED</value>
+	</characteristic>
+        
+    </service>
+
+    <service uuid="a6322521-eb79-4b9f-9152-19daa4870419" id="interchange" advertise="true">
+        <description>Data interchange</description>
+
+        <characteristic uuid="f90ea017-f673-45b8-b00b-16a088a2ed61" id="accel_x">
+            <description>Accel X</description>
+            <properties read="true" indicate="true" />
+            <value length="2" />
+        </characteristic>
+
+        <characteristic uuid="ebdf04a6-890a-4686-b9a8-a936148970a4" id="accel_y">
+            <description>Accel Y</description>
+            <properties read="true" indicate="true" />
+            <value length="2" />
+        </characteristic>
+
+        <characteristic uuid="ebdf04a6-890a-4686-b9a8-a936148970a6" id="accel_z">
+            <description>Accel Z</description>
+            <properties read="true" indicate="true" />
+            <value length="2" />
+        </characteristic>
+
+        <characteristic uuid="ebdf04a6-890a-4686-b9a8-a936148970a7" id="color">
+            <description>Band color</description>
+            <properties write="true" indicate="true" />
+            <value length="2" />
+        </characteristic>
+
+    </service>
+    
+</configuration>
