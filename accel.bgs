@@ -16,9 +16,22 @@ const c_datalen = 3
 
 const c_handle_for_incoming_data_event = $1
 
+const spiChannel = 0
+
 dim handle_for_incoming_data_event
 
 dim incomingdata
+
+dim result
+dim channel
+dim tlen
+dim accstatus
+dim connected
+
+procedure spi_to_ledcontroller(data)
+	call attributes_write(accel_z, 0, c_datalen, data)
+	call hardware_spi_transfer(spiChannel,3,data)(result,channel,tlen,accstatus)
+end
 
 event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw )
 	incomingdata = $000000
@@ -62,7 +75,11 @@ end
 # Connection event listener
 event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
 	#Device is connected
-
+    # Set up a connection interval of 50ms (40*1.25ms)
+    if connected = 0 then
+        call connection_update(connection,40,40,latency,timeout)
+    end if 
+    connected = 1
 	#enable status LED
 	#call hardware_io_port_write(0, 1, 1)	
 end
@@ -86,6 +103,7 @@ event attributes_value(connection, reason, handle, offset, value_len, value_data
 			incomingdata = value_data(offset:c_datalen)
 			call attributes_write(accel_x, 0, c_datalen, incomingdata)        #writes to accel_x GATT
 			call hardware_io_port_write(0, port0_pin1, incomingdata)  #writing to this pin triggers interrupt which writes to accel_y GATT
+			call spi_to_ledcontroller(incomingdata)
 		end if
 		#Respond to attribute_changed event since reason is user-attribute write (send the response back to the caller)
 		call attributes_user_write_response(connection, $0)
@@ -98,6 +116,8 @@ event hardware_io_port_status(delta_timestamp, port, irq, state)
 		####initiate SPI data receive from ADLX345
 		# if incomingdata = $FF
 			call attributes_write(accel_y, 0, c_datalen, incomingdata)
+			# call spi_to_ledcontroller(incomingdata)
 		# end if
 	end if
 end
+

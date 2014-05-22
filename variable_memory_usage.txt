@@ -1,4 +1,4 @@
-8
+28
 0:0	GAP_AD_FLAG_BREDR_NOT_SUPPORTED
 0:0	GAP_AD_FLAG_GENERAL_DISCOVERABLE
 0:0	GAP_AD_FLAG_LIMITED_DISCOVERABLE
@@ -100,5 +100,11 @@
 0:0	reg_INTERRUPTS_MAP
 0:0	c_datalen
 0:0	c_handle_for_incoming_data_event
+0:0	spiChannel
 0:4	handle_for_incoming_data_event
 4:4	incomingdata
+8:4	result
+12:4	channel
+16:4	tlen
+20:4	accstatus
+24:4	connected
